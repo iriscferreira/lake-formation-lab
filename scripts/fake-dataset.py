@@ -17,6 +17,8 @@
 
 import pandas as pd
 from faker import Faker
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 # create some fake data
 fake = Faker(locale='en_US')
@@ -46,8 +48,17 @@ df_fake_credit_cards = pd.DataFrame(fake_credit_cards)
 
 df_fake_banks = pd.DataFrame(fake_banks)
 
-# data frame to csv
+table1 = pa.Table.from_pandas(df_fake_profile)
+pq.write_table(table1, 'profile.parquet')
 
-df_fake_profile.to_parquet('fake_profile.parquet')
-df_fake_credit_cards.to_parquet('fake_credit_cards.parquet')
-df_fake_banks.to_parquet('fake_banks.parquet')
+table2 = pa.Table.from_pandas(df_fake_credit_cards)
+pq.write_table(table2, 'credit_cards.parquet')
+
+table3 = pa.Table.from_pandas(df_fake_banks)
+pq.write_table(table3, 'banks.parquet')
+
+# # data frame to csv
+
+# df_fake_profile.to_parquet('fake_profile.parquet')
+# df_fake_credit_cards.to_parquet('fake_credit_cards.parquet')
+# df_fake_banks.to_parquet('fake_banks.parquet')

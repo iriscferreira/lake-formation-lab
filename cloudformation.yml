@@ -163,7 +163,7 @@ Resources:
             yum install -y mysql jq python3
             aws --profile default configure set region $REGION_ID
             cd /tmp
-            wget https://raw.githubusercontent.com/aws-samples/data-masking-fine-grained-access-using-aws-lake-formation/main/scripts/fake-dataset.py
+            wget https://raw.githubusercontent.com/iriscferreira/lake-formation-lab/main/scripts/fake-dataset.py
             python3 -m venv venv
             source ./venv/bin/activate
             pip install Faker
@@ -171,9 +171,9 @@ Resources:
             pip install numpy
             python3 fake-dataset.py
             deactivate
-            aws s3 cp /tmp/fake_profile.csv s3://assets-$REGION_ID-$ACCOUNT_ID
-            aws s3 cp /tmp/fake_credit_cards.csv s3://assets-$REGION_ID-$ACCOUNT_ID
-            aws s3 cp /tmp/fake_banks.csv s3://assets-$REGION_ID-$ACCOUNT_ID
+            aws s3 cp /tmp/fake_profile.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset
+            aws s3 cp /tmp/fake_credit_cards.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset
+            aws s3 cp /tmp/fake_banks.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset
             sudo shutdown -h now
 
 
@@ -200,6 +200,37 @@ Resources:
        - !Ref Ec2InstanceRole
 
 
+# #     ____ _
+# #    / ___| |_   _  ___
+# #   | |  _| | | | |/ _ \
+# #   | |_| | | |_| |  __/
+# #    \____|_|\__,_|\___|
+# #
+
+
+  GlueDatabaseDataset:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: dataset
+        Description: 'Data Classification Pipeline'
+
+  
+  GlueInputTableCrawlerDataset:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Role: !GetAtt GlueJobRole.Arn
+      Description: Data Classification Pipeline Input Table Crawler
+      DatabaseName: !Ref GlueDatabaseDataset
+      Targets:
+        S3Targets:
+          - Path: !Sub 's3://${AssetsBucket}/dataset'
+      Name: dataset-crawler
+      SchemaChangePolicy:
+        UpdateBehavior: "UPDATE_IN_DATABASE"
+        DeleteBehavior: "DEPRECATE_IN_DATABASE"
+      Configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"},\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}}}"
 
 
 
@@ -210,6 +241,47 @@ Resources:
 #   |___/_/   \_\_|  |_|
 #
 
+
+  GlueJobRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 
+        - GlueJobRole-${Hash}
+        - { Hash: !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]] }
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: 'sts:AssumeRole'
+            Effect: 'Allow'
+            Principal:
+              Service: 
+                - glue.amazonaws.com
+                - lakeformation.amazonaws.com
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'
+      Policies:
+        - PolicyName: !Sub 
+          - S3ReadWriteAccess-${Hash}
+          - { Hash: !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref 'AWS::StackId']]]] }
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:ListBucket'
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                Resource:
+                  - !Sub ${AssetsBucket.Arn}
+                  - !Sub ${AssetsBucket.Arn}/* 
+   
+
+    Metadata:
+        cfn_nag:
+          rules_to_suppress:
+            - id: W28
+              reason: "Explicit name to use on instructions with the users."
 
   Ec2InstanceRole:
     Type: AWS::IAM::Role

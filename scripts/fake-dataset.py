@@ -48,6 +48,6 @@ df_fake_banks = pd.DataFrame(fake_banks)
 
 # data frame to csv
 
-df_fake_profile.to_csv('fake_profile.csv')
-df_fake_credit_cards.to_csv('fake_credit_cards.csv')
-df_fake_banks.to_csv('fake_banks.csv')
+df_fake_profile.to_parquet('fake_profile.parquet')
+df_fake_credit_cards.to_parquet('fake_credit_cards.parquet')
+df_fake_banks.to_parquet('fake_banks.parquet')

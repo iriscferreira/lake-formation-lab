@@ -170,9 +170,9 @@ Resources:
             pip install -r requirements.txt
             python3 fake-dataset.py
             deactivate
-            aws s3 cp /tmp/profile.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset
-            aws s3 cp /tmp/credit_cards.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset
-            aws s3 cp /tmp/banks.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset
+            aws s3 cp /tmp/profile.parquet s3://assets-$REGION_ID-$ACCOUNT_ID
+            aws s3 cp /tmp/credit_cards.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/
+            aws s3 cp /tmp/banks.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/
             sudo shutdown -h now
 
 

@@ -164,11 +164,10 @@ Resources:
             aws --profile default configure set region $REGION_ID
             cd /tmp
             wget https://raw.githubusercontent.com/iriscferreira/lake-formation-lab/main/scripts/fake-dataset.py
+            wget https://raw.githubusercontent.com/iriscferreira/lake-formation-lab/main/scripts/requirements.txt
             python3 -m venv venv
             source ./venv/bin/activate
-            pip install Faker
-            pip install pandas
-            pip install numpy
+            pip install -r requirements.txt
             python3 fake-dataset.py
             deactivate
             aws s3 cp /tmp/profile.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset

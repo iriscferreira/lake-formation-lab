@@ -105,33 +105,6 @@ Resources:
             reason: "This is the logging bucket for all other buckets. Does not require log to be enabled for this solution. Avoids recurring loop."
 
 
-  AthenaQueryBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub 'secure-athena-query-${AWS::Region}-${AWS::AccountId}'
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      LoggingConfiguration:
-        DestinationBucketName: !Ref LoggingBucket
-        LogFilePrefix: athena-queries-logs
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      LifecycleConfiguration:
-        Rules:
-        - Id: ExpirationRule
-          Status: Enabled
-          ExpirationInDays: '7'
-    DeletionPolicy: Retain
-                 
-
-
-
-
 #    _____ ____ ____
 #   | ____/ ___|___ \
 #   |  _|| |     __) |
@@ -170,9 +143,9 @@ Resources:
             pip install -r requirements.txt
             python3 fake-dataset.py
             deactivate
-            aws s3 cp /tmp/profile.parquet s3://assets-$REGION_ID-$ACCOUNT_ID
-            aws s3 cp /tmp/credit_cards.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/
-            aws s3 cp /tmp/banks.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/
+            aws s3 cp /tmp/profile.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset/profile/
+            aws s3 cp /tmp/credit_cards.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset/credit_cards/
+            aws s3 cp /tmp/banks.parquet s3://assets-$REGION_ID-$ACCOUNT_ID/dataset/banks/
             sudo shutdown -h now
 
 

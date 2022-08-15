@@ -224,7 +224,7 @@ Resources:
       DatabaseName: !Ref GlueDatabaseDataset
       Targets:
         S3Targets:
-          - Path: !Sub 's3://${AssetsBucket}/dataset'
+          - Path: !Sub 's3://${AssetsBucket}/'
       Name: dataset-crawler
       SchemaChangePolicy:
         UpdateBehavior: "UPDATE_IN_DATABASE"
